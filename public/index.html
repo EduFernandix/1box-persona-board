@@ -345,15 +345,24 @@ function myName(){ return ($("#myname").value||"").trim().slice(0,60) }
 try{ $("#myname").value=localStorage.getItem("board_name")||"" }catch(_){}
 $("#myname").addEventListener("input",()=>{ try{localStorage.setItem("board_name",myName())}catch(_){} });
 const TOKEN=myToken();
-async function sync(){
-  try{const r=await fetch("/api/state",{cache:"no-store"}); if(!r.ok) throw new Error(r.status); const s=await r.json();
-    const mineIds=new Set(Object.entries(state.comments).filter(([k,v])=>v.mine).map(([k])=>k));
-    state.reviews=s.reviews||{}; state.comments={}; Object.entries(s.comments||{}).forEach(([k,v])=>{state.comments[k]={...v,mine:mineIds.has(k)||v.mine}});
-    $("#dbdot").classList.add("live"); $("#dbmsg").textContent="Connected. Anyone with the link can set a status and comment; everything is shared and refreshes every few seconds.";
-    applyReviews(); if(!document.activeElement||!document.activeElement.closest("form.cform")) renderThreads();
-  }catch(e){ $("#dbdot").classList.remove("live"); $("#dbmsg").textContent="Not connected ("+e.message+"). Retrying…" }
+function applyState(s){
+  const mineIds=new Set(Object.entries(state.comments).filter(([k,v])=>v.mine).map(([k])=>k));
+  state.reviews=s.reviews||{}; state.comments={}; Object.entries(s.comments||{}).forEach(([k,v])=>{state.comments[k]={...v,mine:mineIds.has(k)||v.mine}});
+  applyReviews(); renderThreads();
 }
-sync(); setInterval(sync,4000);
+function setLive(ok,msg){ $("#dbdot").classList.toggle("live",ok); $("#dbmsg").textContent=msg }
+async function sync(){
+  try{const r=await fetch("/api/state",{cache:"no-store"}); if(!r.ok) throw new Error(r.status); applyState(await r.json()); if(!live) setLive(true,"Connected (refreshing every 15 s). Anyone with the link can set a status and comment.") }
+  catch(e){ setLive(false,"Not connected ("+e.message+"). Retrying…") }
+}
+let live=false, es=null;
+function connect(){
+  try{ es=new EventSource("/api/events") }catch(_){ return }
+  es.addEventListener("state",e=>{ try{ applyState(JSON.parse(e.data)); if(!live){live=true; setLive(true,"Live. Anyone with the link can set a status and comment; changes appear for everyone instantly.")} }catch(_){} });
+  es.onerror=()=>{ live=false; setLive(false,"Reconnecting… (changes still save; the page refreshes every 15 s meanwhile)"); };
+}
+connect(); sync(); setInterval(()=>{ if(!live) sync() },15000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ sync(); if(es&&es.readyState===2) connect(); } });
 </script>
 
 </body></html>

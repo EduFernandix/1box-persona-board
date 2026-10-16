@@ -9,7 +9,11 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 let state = { reviews: {}, comments: {} };
 try { state = JSON.parse(fs.readFileSync(DATA, 'utf8')); } catch (_) {}
 let writing = Promise.resolve();
-function save() { writing = writing.then(() => fs.promises.writeFile(DATA + '.tmp', JSON.stringify(state)).then(() => fs.promises.rename(DATA + '.tmp', DATA))).catch(e => console.error('save', e)); return writing; }
+const clients = new Set();
+function publicState() { const comments = {}; for (const [k, v] of Object.entries(state.comments)) { const { tokenHash, ...pub } = v; comments[k] = pub; } return { reviews: state.reviews, comments }; }
+function broadcast() { const data = 'event: state\ndata: ' + JSON.stringify(publicState()) + '\n\n'; for (const res of clients) { try { res.write(data); } catch (_) { clients.delete(res); } } }
+setInterval(() => { for (const res of clients) { try { res.write(': ping\n\n'); } catch (_) { clients.delete(res); } } }, 20000);
+function save() { broadcast(); writing = writing.then(() => fs.promises.writeFile(DATA + '.tmp', JSON.stringify(state)).then(() => fs.promises.rename(DATA + '.tmp', DATA))).catch(e => console.error('save', e)); return writing; }
 const MIME = { '.html': 'text/html; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.css': 'text/css', '.js': 'text/javascript' };
 const ASSET = /^[a-z0-9_-]{1,40}$/i, STATUS = new Set(['pending', 'approved', 'adjust', 'redo']);
 function json(res, code, body) { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); }
@@ -18,7 +22,12 @@ const clean = (s, n) => String(s || '').replace(/[\u0000-\u0008\u000b\u000c\u000
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   try {
-    if (url.pathname === '/api/state' && req.method === 'GET') { const comments = {}; for (const [k, v] of Object.entries(state.comments)) { const { tokenHash, ...pub } = v; comments[k] = pub; } return json(res, 200, { reviews: state.reviews, comments }); }
+    if (url.pathname === '/api/state' && req.method === 'GET') return json(res, 200, publicState());
+    if (url.pathname === '/api/events' && req.method === 'GET') {
+      res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache, no-transform', 'connection': 'keep-alive', 'x-accel-buffering': 'no' });
+      res.write('retry: 2000\n\n'); res.write('event: state\ndata: ' + JSON.stringify(publicState()) + '\n\n');
+      clients.add(res); req.on('close', () => clients.delete(res)); return;
+    }
     if (url.pathname === '/api/review' && req.method === 'POST') {
       const b = await body(req); const asset = clean(b.asset, 40), status = clean(b.status, 20);
       if (!ASSET.test(asset) || !STATUS.has(status)) return json(res, 400, { error: 'bad request' });
