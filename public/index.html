@@ -1,0 +1,359 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light dark}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>1Box Persona Board</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: overview board (persona cards, 1Box sets, props) → click a persona for its own page:
+   hero + takes + home + set, each asset with a review state saved through the board's own API. */
+:root{
+  --bg:#f6f7f4; --surface:#ffffff; --surface-2:#eef1ea; --line:#d9ded3; --fg:#1b2019; --muted:#5f6a5a;
+  --accent:#2f9b3b; --accent-ink:#1f6b2a; --accent-soft:#e1f2e0;
+  --ok:#2f9b3b; --warn:#c98a12; --bad:#c7452d; --pend:#8b948a;
+  --display:"Sora",system-ui,sans-serif; --body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  --radius:10px; --shadow:0 1px 2px rgba(20,30,18,.06),0 8px 24px rgba(20,30,18,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161a15; --surface:#1f251e; --surface-2:#273026; --line:#364033; --fg:#eef1ea; --muted:#a7b2a3;
+  --accent:#58c763; --accent-ink:#9fe3a5; --accent-soft:#223a26; --ok:#58c763; --warn:#e2a93a; --bad:#ef7357; --pend:#7d877b;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161a15; --surface:#1f251e; --surface-2:#273026; --line:#364033; --fg:#eef1ea; --muted:#a7b2a3;
+  --accent:#58c763; --accent-ink:#9fe3a5; --accent-soft:#223a26; --ok:#58c763; --warn:#e2a93a; --bad:#ef7357; --pend:#7d877b;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;padding-inline:clamp(16px,3vw,40px);padding-block:0 64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+a{color:var(--accent-ink)}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-block:28px 18px;border-bottom:1px solid var(--line)}
+header.top h1{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.01em}
+header.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.eyebrow{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:92px}
+.stat b{display:block;font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.statusbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px;color:var(--muted);padding-block:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--pend);display:inline-block}
+.dot.live{background:var(--ok)}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;z-index:5;border-bottom:1px solid var(--line)}
+nav.tabs a{font-family:var(--display);font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:999px}
+nav.tabs a:hover,nav.tabs a:focus-visible{background:var(--surface-2);color:var(--fg);outline:none}
+section{padding-block:28px 8px}
+section>.sechead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+section h2{font-size:20px;font-weight:600}
+section .sechead p{margin:0;color:var(--muted);max-width:70ch}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;min-width:0;box-shadow:var(--shadow);position:relative}
+.card .stripe{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pend);z-index:1}
+.card[data-status="approved"] .stripe{background:var(--ok)}
+.card[data-status="adjust"] .stripe{background:var(--warn)}
+.card[data-status="redo"] .stripe{background:var(--bad)}
+.card figure{margin:0;background:var(--surface-2);cursor:zoom-in;position:relative}
+.card figure img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover}
+.card.land figure img{aspect-ratio:3/2}
+.card figure .n{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--display);font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px}
+.card .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card h3{font-size:16px;font-weight:600;line-height:1.25}
+.card h3 a{color:inherit;text-decoration:none}
+.card h3 a:hover{color:var(--accent-ink)}
+.card .tag{font-size:12px;color:var(--muted)}
+.card q{font-style:italic;color:var(--fg);font-size:14px;display:block;quotes:"\201C" "\201D"}
+.card .meta{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--display);font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 10px;cursor:pointer}
+.chip:hover{border-color:var(--fg)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chip[aria-pressed="true"][data-v="approved"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip[aria-pressed="true"][data-v="adjust"]{background:var(--warn);border-color:var(--warn);color:#fff}
+.chip[aria-pressed="true"][data-v="redo"]{background:var(--bad);border-color:var(--bad);color:#fff}
+textarea,input[type=text]{width:100%;font:inherit;font-size:14px;color:var(--fg);background:var(--surface-2);border:1px solid transparent;border-radius:6px;padding:8px 10px;resize:vertical;min-height:40px}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+textarea::placeholder,input::placeholder{color:var(--muted)}
+.saved{font-size:11px;color:var(--muted);min-height:14px}
+.thread{display:flex;flex-direction:column;gap:6px}
+.cmt{background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:13.5px;display:grid;gap:2px}
+.cmt .who{display:flex;gap:8px;align-items:baseline;font-size:12px;color:var(--muted)}
+.cmt .who b{color:var(--fg);font-family:var(--display);font-weight:600}
+.cmt .who .x{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:11px;padding:0}
+.cmt .who .x:hover{color:var(--bad)}
+.cmt p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.cmt.legacy{border-left:3px solid var(--line)}
+.cform{display:flex;gap:6px;align-items:flex-end}
+.cform textarea{min-height:38px;rows:1}
+.cform button{flex:none;padding:8px 12px}
+.ccount{font-size:12px;color:var(--muted)}
+.btn{font-family:var(--display);font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.openbtn{align-self:flex-start}
+details.persona{font-size:13.5px;color:var(--muted)}
+details.persona summary{cursor:pointer;color:var(--accent-ink);font-weight:600;font-size:13px}
+details.persona ul{margin:6px 0 0;padding-left:18px}
+.items{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.item{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.item input[type=checkbox]{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.item .name{font-weight:600}
+.item .for{font-size:12.5px;color:var(--muted)}
+.item textarea{grid-column:2;min-height:34px}
+.item .del{grid-column:2;justify-self:start;background:none;border:0;color:var(--muted);font-size:12px;cursor:pointer;padding:0}
+.item .del:hover{color:var(--bad)}
+.additem{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.additem input{flex:1 1 240px}
+.global{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:grid;gap:8px}
+/* persona page */
+#detail{display:none}
+body.in-detail #overview{display:none}
+body.in-detail #detail{display:block}
+.crumb{display:flex;align-items:center;gap:10px;padding-block:16px 4px;font-size:14px}
+.crumb a{text-decoration:none;font-family:var(--display);font-weight:600}
+.crumb .nav{margin-left:auto;display:flex;gap:6px}
+.hero{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:24px;align-items:start;padding-block:12px 20px;border-bottom:1px solid var(--line)}
+.hero figure{margin:0;border-radius:var(--radius);overflow:hidden;background:var(--surface-2);cursor:zoom-in}
+.hero figure img{display:block;width:100%;height:auto}
+.hero h2{font-size:clamp(22px,3vw,30px);font-weight:700}
+.hero .tag{color:var(--muted);margin-top:2px}
+.hero q{display:block;font-size:18px;font-style:italic;margin:14px 0;quotes:"\201C" "\201D";max-width:60ch}
+.hero .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;font-size:14px}
+.hero .cols h4{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 6px}
+.hero .cols ul{margin:0;padding-left:18px;color:var(--muted)}
+.hero .msg{background:var(--accent-soft);border-radius:8px;padding:10px 12px;color:var(--fg)}
+.hero .pnote{margin-top:14px}
+.takes{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.takes .card.land{grid-column:span 1}
+@media (min-width:900px){.takes .card.land{grid-column:span 2}}
+.missing{border:1px dashed var(--line);border-radius:var(--radius);display:grid;place-items:center;color:var(--muted);font-size:13px;aspect-ratio:3/2;padding:16px;text-align:center}
+.refs{display:flex;gap:12px;flex-wrap:wrap}
+.refs .ref{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px 8px 8px}
+.refs img{width:48px;height:48px;object-fit:cover;border-radius:6px}
+.refs b{display:block;font-size:14px}
+.refs span{font-size:12px;color:var(--muted)}
+dialog.lb{border:0;padding:0;background:transparent;max-width:min(96vw,1400px);max-height:96vh}
+dialog.lb::backdrop{background:rgba(10,14,9,.85)}
+dialog.lb img{display:block;max-width:96vw;max-height:88vh;width:auto;height:auto;border-radius:8px}
+dialog.lb .cap{color:#fff;font-size:14px;padding:8px 2px;display:flex;justify-content:space-between;gap:12px}
+dialog.lb button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:6px;padding:4px 10px;cursor:pointer}
+.empty{color:var(--muted);font-size:14px}
+.rule{font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:8px 12px}
+@media (prefers-reduced-motion:no-preference){.card figure img{transition:transform .25s ease}.card figure:hover img{transform:scale(1.015)}}
+@media (max-width:700px){.hero{grid-template-columns:1fr}}
+@media (max-width:480px){.grid,.grid.wide{grid-template-columns:1fr}}
+</style>
+
+<header class="top">
+  <div>
+    <div class="eyebrow">1Box · brand blueprint · OpenArt</div>
+    <h1>1Box Persona Board</h1>
+    <p>Emma the store manager and the ten recurring characters from the video-ad brief, their homes and the 1Box sets. Open a character for all its takes. Mark each image Approved, Adjust or Redo and add comments; everyone's comments stay on the card and feed the next round.</p>
+  </div>
+  <div class="stats" id="stats">
+    <div class="stat"><b id="s-approved">–</b><span>approved</span></div>
+    <div class="stat"><b id="s-adjust">–</b><span>to adjust</span></div>
+    <div class="stat"><b id="s-redo">–</b><span>to redo</span></div>
+    <div class="stat"><b id="s-pending">–</b><span>not reviewed</span></div>
+    <div class="stat"><b id="s-comments">–</b><span>comments</span></div>
+    <div class="stat"><b id="s-credits">–</b><span>credits spent</span></div>
+  </div>
+</header>
+<div class="statusbar"><span class="dot" id="dbdot"></span><span id="dbmsg">Connecting…</span><span style="margin-left:auto;display:flex;gap:6px;align-items:center">Your name: <input type="text" id="myname" placeholder="e.g. Ryanne" style="width:160px;padding:5px 8px;min-height:0"></span></div>
+
+<div id="overview">
+<nav class="tabs"><a href="#personas">People</a><a href="#sets">1Box sets</a><a href="#direction">Direction notes</a></nav>
+
+<section id="personas">
+  <div class="sechead"><h2>People</h2><p>Staff first, then the ten recurring characters. Each one opens its own page with the portrait in context, the studio reference, a scene at 1Box and the home from four angles. Customers never wear 1Box branding.</p></div>
+  <div class="grid" id="persona-grid"></div>
+</section>
+
+<section id="sets">
+  <div class="sechead"><h2>1Box sets</h2><p>Image-to-image from the real Barendrecht store photos, 3:2. Rule: nothing attached to or hanging from the unit walls; everything stands on the floor.</p></div>
+  <div class="grid wide" id="set-grid"></div>
+</section>
+
+<section id="direction">
+  <div class="sechead"><h2>Direction notes</h2><p>Anything that applies to the whole set: style, ages, clothing, lighting, what to avoid.</p></div>
+  <div class="global"><div class="thread" data-asset="_direction"></div><form class="cform" data-asset="_direction"><textarea rows="2" placeholder="e.g. keep everyone a bit more ordinary / less catalogue; more Dutch daylight; no visible brand names on tools"></textarea><button class="btn" type="submit">Add</button></form></div>
+</section>
+</div>
+
+<div id="detail"></div>
+
+<dialog class="lb" id="lb"><img id="lb-img" alt=""><div class="cap"><span id="lb-cap"></span><button type="button" id="lb-close">Close</button></div></dialog>
+
+<script>
+const T=(id,file,label,ratio)=>({id,file,label,ratio:ratio||"3:4"});
+const PEOPLE=[
+ {id:"emma",staff:true,file:"emma/emma-01",name:"Emma",tag:"Store manager · 1Box staff (existing character)",quote:"Hoi! Ik ben Emma. Kom gerust langs, dan laat ik je de box zien.",set:"B06",
+  needs:["Already exists in the old account (character + ElevenLabs voice)","166 prompts generated with @Emma since September","Grey 1Box polo, navy trousers, blonde hair","To be recreated in the new account from the same reference"],
+  msg:"Warm, practical, never salesy. She is the face of every 1Box set.",
+  takes:[T("emma-01","emma/emma-01","Reception, Sep 11"),T("emma-02","emma/emma-02","Corridor, Sep 11"),T("emma-03","emma/emma-03","Inside a unit, Sep 11"),T("emma-04","emma/emma-04","Large unit, Sep 11"),T("emma-05","emma/emma-05","Video still, Sep 27"),T("emma-06","emma/emma-06","At the unit (edit), Sep 27","3:2"),T("emma-07","emma/emma-07","At the unit, boxes (edit), Sep 27","3:2"),T("emma-08","emma/emma-08","Polo match (edit), Sep 28")],
+  home:null},
+ {id:"c01",file:"c01-portrait",ref:T("c01-ref","ref-01-sanne-shaia","Studio reference","3:4"),name:"Sanne (35)",tag:"Children's clothing webshop · Surinamese-Hindustani roots",quote:"Proud of the webshop, done with living in a warehouse.",set:"B01",needs:["Part-time office manager, runs a kids' clothing webshop started when she became a mother","Two children (4 and 6) at school; ships parcels herself twice a week","Buys in bulk, so the house fills up with stock","With 1Box she keeps only one month of stock at home"],msg:"Warm, organised, down-to-earth, a little rushed."},
+ {id:"c02",file:"c02-portrait",ref:T("c02-ref","ref-02-eduardo","Studio reference","3:2"),name:"Eduardo (42)",tag:"Independent handyman · Southern European roots",quote:"Everything dry, safe and within reach. I load only what the job needs.",set:"B02",needs:["Self-employed: custom cabinets, small renovations, repairs","Planned projects, no night call-outs; no employees, one van full of tools","Every job needs different materials","At 1Box he drives up, loads what he needs, leaves the rest safe"],msg:"Reliable, calm, skilled, efficient. 'I've got this under control.'"},
+ {id:"c03",file:"c03-portrait",ref:T("c03-ref","ref-03-family-enschede","Studio reference","3:2"),name:"Emre, Lotte, Daan & Noor",tag:"Moving · family from Enschede · Turkish roots",quote:"Mum plans, dad lifts, the kids 'help'.",set:"B05",needs:["Emre (38) accountant, Lotte (36) part-time secretary, Daan (8) and Noor (6) play football and hockey","Moving house; the old house needs to be photographed","Lego, toys, sports gear, a football goal and a trampoline are in the way","All of it goes into a box temporarily"],msg:"Cheerful, a bit chaotic, a typical Dutch family."},
+ {id:"c04",file:"c04-portrait",ref:T("c04-ref","ref-04-jesse-fleur-mila","Studio reference","3:2"),name:"Jesse, Fleur & Mila",tag:"Renovating · young couple with a baby",quote:"One room at a time. The crib and the first baby clothes stay with us, just not here.",set:"B03",needs:["Both 30, bought a house that still needs renovating, little money","Already live there, renovate room by room","Belongings of the room being renovated go into storage","Keep Mila's (1) crib and first clothes; no room for them yet"],msg:"Practical, optimistic, a little tired but strong together. Paint on their clothes."},
+ {id:"c05",file:"c05-portrait",ref:T("c05-ref","ref-05-henk-marijke","Studio reference","3:2"),name:"Henk & Marijke (65 & 63)",tag:"No storage room · from a large house to an apartment",quote:"We don't want to part with it, but we don't want to live surrounded by it either.",set:"B03",needs:["Beautiful apartment, but no attic or storage space","The crib their children slept in, keepsakes, photo albums","Seasonal items such as Christmas decorations","Enjoying this new stage of life"],msg:"Warm, stylish, sentimental yet practical."},
+ {id:"c06",file:"c06-portrait",ref:T("c06-ref","ref-06-lars","Studio reference","3:4"),name:"Lars (22)",tag:"Student · semester abroad",quote:"Sublet the room, keep the stuff. Five months and everything goes straight back.",set:"B04",needs:["From Alkmaar, studies Business Administration in Groningen, student house","Member of a student association, enjoys student life","Semester abroad; sublets his room but won't leave his things there","Rents a unit for 5 months"],msg:"Sociable, relaxed, enjoys life, takes care of his things."},
+ {id:"c07",file:"c07-portrait",ref:T("c07-ref","ref-07-jasper","Studio reference","3:4"),name:"Jasper (26)",tag:"Sabbatical · Indo roots",quote:"Six months around the world. My things stay safe, my rent stops.",set:"B07",needs:["Works at a media agency in Amsterdam, 6 months of leave to travel","Sublets his home during the trip","Parents live too far away and have no space","Rents a unit for the duration of the sabbatical"],msg:"Creative, curious, spontaneous but well prepared. Can't wait to leave."},
+ {id:"c08",file:"c08-portrait",ref:T("c08-ref","ref-08-leonie-siblings","Studio reference","3:2"),name:"Leonie (55) and her siblings",tag:"Clearing out the parental home",quote:"Take your time.",set:"B03",needs:["Her mother died a few years ago, now her father too; the family home must be cleared and sold","Still grieving, no headspace to decide; everything has emotional value","Her brother and sister still need to work out what they want","Everything stored safely until there is headspace for it"],msg:"Gentle, calm, caring. Respectful and understated: no humour, no exaggerated emotion, no hospital or funeral imagery."},
+ {id:"c09",file:"c09-portrait",ref:T("c09-ref","ref-09-family-lelystad","Studio reference","3:2"),name:"Pieter, Chantal, Jaylen & Imani",tag:"Seasonal items · family from Lelystad · Surinamese-Creole roots",quote:"Room to live at home, and the skis within reach when it snows.",set:"B08",needs:["Lovely terraced house in Lelystad; storage already fairly full","The attic became a home office: no room for skis, Christmas tree, camping gear","Rents a unit so they can always get to their things","Pieter (42), Chantal (40), Jaylen (10), Imani (7)"],msg:"Active, warm, well-organised. Loves winter sports, Christmas and summer camping."},
+ {id:"c10",file:"c10-portrait",ref:T("c10-ref","ref-10-eline","Studio reference","3:2"),name:"Eline (46)",tag:"Seasonal bike · road cyclist",quote:"Grab the bike the moment the sun comes out.",set:"B07",needs:["Keen road cyclist, lives on the third floor in Amsterdam","Rides every weekend April to September, cycling holidays","No room in the shared hallway, carrying it upstairs is not an option, the street is not safe","Rents a box for the bike and all the accessories"],msg:"Energetic, driven, adventurous. Lives for the weekend ride."}
+];
+PEOPLE.forEach(p=>{ if(p.staff) return;
+  p.takes=[T(p.id,p.file,"Portrait \u00b7 in context"),p.ref,T(p.id+"-1box",p.id+"-1box","At 1Box","3:2")];
+  p.home=T(p.id+"-home",p.id+"-home","Home \u00b7 main view","3:2");
+  p.homes=[p.home,T(p.id+"-home-2",p.id+"-home-2","Home \u00b7 reverse angle","3:2"),T(p.id+"-home-3",p.id+"-home-3","Home \u00b7 wide, from the door","3:2"),T(p.id+"-home-4",p.id+"-home-4","Home \u00b7 detail","3:2")];
+});
+const SETS=[
+ {id:"B01",file:"B01v2-unit-3m2-webshop-stock",name:"Unit 3 m² · webshop stock",for:"Sanne",ref:"Barendrecht 0091 (3 m²) · v2, no shelves"},
+ {id:"B02",file:"B02v2-unit-7m2-handyman-tools",name:"Unit 7 m² · handyman tools",for:"Eduardo",ref:"Barendrecht 0047 (7 m²) · v2, nothing on walls"},
+ {id:"B03",file:"B03-unit-10m2-one-room-longterm",name:"Unit 10 m² · one room, long term",for:"Jesse & Fleur, Henk & Marijke, Leonie",ref:"Barendrecht 0034 (10 m²)"},
+ {id:"B04",file:"B04-unit-2m2-abroad-suitcases",name:"Unit 2 m² · suitcases, a year abroad",for:"Lars",ref:"Barendrecht 0085 (2 m²)"},
+ {id:"B05",file:"B05-unit-10m2-full-household-renovation",name:"Unit 10 m² · whole household",for:"family Enschede",ref:"Barendrecht 0035 (10 m²)"},
+ {id:"B06",file:"B06-reception-welkom",name:"Reception · WELKOM desk",for:"Emma, everyone",ref:"Amsterdam office photo + box set"},
+ {id:"B07",file:"B07-corridor-open-unit-trolley",name:"Corridor · open unit, trolley",for:"Jasper, Eline, everyone",ref:"Barendrecht 0131 + unit 1504"},
+ {id:"B08",file:"B08-unit-3m2-seasonal-ski-christmas",name:"Unit 3 m² · ski gear & Christmas",for:"family Lelystad",ref:"Barendrecht 0092 (3 m²)"}
+];
+const DEFAULT_ITEMS=[
+ {id:"i01",name:"1Box moving box (white & green), single",for:"all"},{id:"i02",name:"Stack of three 1Box boxes",for:"all"},
+ {id:"i03",name:"Flat trolley with two 1Box boxes",for:"corridor, Alex, Dekker"},{id:"i04",name:"Padlock and access code card",for:"Ronnie, security message"},
+ {id:"i05",name:"Toolbox, compressor, circular saw",for:"Eduardo"},{id:"i06",name:"Pair of skis + ski boots",for:"family Lelystad"},
+ {id:"i07",name:"Boxed artificial Christmas tree + bauble bin",for:"family Lelystad"},{id:"i08",name:"White wooden crib, disassembled",for:"Lisa & Tom, Marjolein & Peter"},
+ {id:"i09",name:"Stack of photo albums and scrapbooks",for:"Marjolein & Peter, Marieke, Rob"},{id:"i10",name:"Two large suitcases + travel backpack",for:"Julia, Alex"},
+ {id:"i11",name:"House keys with tag + rolled floor plans",for:"Dekker family"},{id:"i12",name:"Two sofas side by side",for:"Tim & Nora"},
+ {id:"i13",name:"Shipping container (20 ft) at a loading bay",for:"Alex"},{id:"i14",name:"Linen cushions and ceramic vases in a shipping box",for:"Sanne"}
+];
+const CREDITS=1600+20*155+40*160;
+const STATUSES=[["approved","Approved"],["adjust","Adjust"],["redo","Redo"]];
+const state={reviews:{},comments:{}};
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SETMAP=Object.fromEntries(SETS.map(s=>[s.id,s]));
+const PMAP=Object.fromEntries(PEOPLE.map(p=>[p.id,p]));
+
+function reviewBlock(id){return `<div class="chips" role="group" aria-label="Status">${STATUSES.map(([v,l])=>`<button type="button" class="chip" data-v="${v}" aria-pressed="false">${l}</button>`).join("")}</div>
+    <div class="thread" data-asset="${id}"></div>
+    <form class="cform" data-asset="${id}"><textarea rows="1" placeholder="Add a comment (what to change, keep, or use it for)"></textarea><button class="btn" type="submit">Add</button></form><div class="saved" id="saved-${id}"></div>`}
+function assetCard(a,title,sub){
+  const land=a.ratio==="3:2";
+  return `<article class="card${land?" land":""}" data-id="${a.id}" data-status="pending"><div class="stripe"></div>
+   <figure data-src="img/${a.file}.jpg" data-cap="${esc(title)}"><img src="img/${a.file}.jpg" alt="${esc(title)}" loading="lazy" onerror="this.closest('figure').classList.add('missing');this.alt='not generated yet';this.removeAttribute('src')"></figure>
+   <div class="body"><div><h3>${esc(title)}</h3>${sub?`<div class="tag">${esc(sub)}</div>`:""}</div>${reviewBlock(a.id)}</div></article>`;
+}
+function personaCard(p){
+  const n=(p.takes?p.takes.length:0)+(p.homes?p.homes.length:0);
+  return `<article class="card" data-id="${p.id}" data-status="pending"><div class="stripe"></div>
+   <figure data-open="${p.id}" style="cursor:pointer"><img src="img/${p.file}.jpg" alt="${esc(p.name)}" loading="lazy"><span class="n">${n} images</span></figure>
+   <div class="body"><div><h3><a href="#${p.id}">${esc(p.name)}</a></h3><div class="tag">${esc(p.tag)}</div></div>
+    <q>${esc(p.quote)}</q>
+    <div class="meta"><span>Set: ${p.set}</span></div>
+    <a class="btn ghost openbtn" href="#${p.id}">Open ${p.staff?"Emma":"persona"} →</a>
+    ${reviewBlock(p.id)}</div></article>`;
+}
+function setCard(s){return assetCard({id:s.id,file:s.file,ratio:"3:2"},s.name,"For: "+s.for+" · ref: "+s.ref)}
+$("#persona-grid").innerHTML=PEOPLE.map(personaCard).join("");
+$("#set-grid").innerHTML=SETS.map(setCard).join("");
+
+function renderDetail(id){
+  const p=PMAP[id]; if(!p){return false}
+  const i=PEOPLE.indexOf(p), prev=PEOPLE[(i-1+PEOPLE.length)%PEOPLE.length], next=PEOPLE[(i+1)%PEOPLE.length];
+  const set=SETMAP[p.set];
+  $("#detail").innerHTML=`
+   <div class="crumb"><a href="#personas">← Board</a><span style="color:var(--muted)">/</span><span>${esc(p.name)}</span>
+     <span class="nav"><a class="btn ghost" href="#${prev.id}">← ${esc(prev.name.split(" (")[0])}</a><a class="btn ghost" href="#${next.id}">${esc(next.name.split(" (")[0])} →</a></span></div>
+   <div class="hero">
+    <figure data-src="img/${p.file}.jpg" data-cap="${esc(p.name)}"><img src="img/${p.file}.jpg" alt="${esc(p.name)}"></figure>
+    <div><div class="eyebrow">${p.staff?"Staff":"Customer persona"}</div><h2>${esc(p.name)}</h2><div class="tag">${esc(p.tag)}</div>
+     <q>${esc(p.quote)}</q>
+     <div class="cols"><div><h4>${p.staff?"Facts":"Story"}</h4><ul>${p.needs.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div><div><h4>Personality & tone</h4><div class="msg">${esc(p.msg)}</div></div></div>
+     <div class="pnote"><h4 class="eyebrow" style="margin-bottom:6px">Persona note</h4><div class="card" data-id="${p.id}" data-status="pending" style="box-shadow:none"><div class="stripe"></div><div class="body">${reviewBlock(p.id)}</div></div></div>
+    </div></div>
+   <section><div class="sechead"><h2>Takes</h2><p>${p.staff?"Existing generations from the old account (Sep 2026). Mark the ones to carry over.":"Portrait in context, the studio reference the identity comes from, and a scene at 1Box. Every new shot is image-to-image from the studio reference."}</p></div>
+    <div class="takes">${p.takes.map(t=>assetCard(t,t.label,"")).join("")}</div></section>
+   ${p.homes?`<section><div class="sechead"><h2>Home · 4 angles</h2><p>The same place as the portrait, without people: main view, reverse angle, wide from the door, and a detail. Use all four as references so later shots stay in the same house.</p></div><div class="takes">${p.homes.map(h=>assetCard(h,h.label,"")).join("")}</div></section>`:""}
+   <section><div class="sechead"><h2>1Box set</h2><p>The branded set this persona uses. Shared with other personas.</p></div><div class="takes">${setCard(set)}</div></section>`;
+  document.body.classList.add("in-detail"); window.scrollTo(0,0); applyReviews(); renderThreads(); return true;
+}
+function route(){
+  const h=(location.hash||"").replace("#","");
+  if(PMAP[h]){renderDetail(h)} else {document.body.classList.remove("in-detail"); $("#detail").innerHTML=""; renderThreads(); if(h){const el=document.getElementById(h); if(el) el.scrollIntoView({block:"start"})}}
+}
+window.addEventListener("hashchange",route);
+
+function renderItems(){}
+function applyReviews(){
+  let c={approved:0,adjust:0,redo:0,pending:0}; const counted=new Set();
+  document.querySelectorAll(".card[data-id]").forEach(card=>{
+    const r=state.reviews[card.dataset.id]||{}; const st=r.status||"pending"; card.dataset.status=st;
+    card.querySelectorAll(".chip").forEach(ch=>ch.setAttribute("aria-pressed",String(ch.dataset.v===st)));
+  });
+  // totals over every reviewable asset, not only what is on screen
+  const all=[...PEOPLE.map(p=>p.id),...PEOPLE.flatMap(p=>(p.takes||[]).map(t=>t.id)),...PEOPLE.flatMap(p=>(p.homes||[]).map(h=>h.id)),...SETS.map(s=>s.id)];
+  all.forEach(id=>{if(counted.has(id))return;counted.add(id);const st=(state.reviews[id]||{}).status||"pending";c[st]=(c[st]||0)+1});
+  ["approved","adjust","redo","pending"].forEach(k=>$("#s-"+k).textContent=c[k]||0);
+  $("#s-credits").textContent=CREDITS.toLocaleString("en-US").replace(","," ");
+}
+function fmtTime(iso){const d=new Date(iso); if(isNaN(d)) return ""; const diff=(Date.now()-d)/1000; if(diff<60) return "just now"; if(diff<3600) return Math.floor(diff/60)+" min ago"; if(diff<86400) return Math.floor(diff/3600)+" h ago"; return d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
+function who(c){ return (c.author||"Someone")+(c.mine?" (you)":"") }
+function renderThreads(){
+  const byAsset={};
+  Object.entries(state.comments).forEach(([cid,c])=>{(byAsset[c.asset]=byAsset[c.asset]||[]).push({cid,...c})});
+  document.querySelectorAll(".thread[data-asset]").forEach(th=>{
+    const a=th.dataset.asset; const list=(byAsset[a]||[]).sort((x,y)=>String(x.createdAt).localeCompare(String(y.createdAt)));
+    const legacy=(state.reviews[a]||{}).note; let html="";
+    if(legacy) html+=`<div class="cmt legacy"><div class="who"><b>Earlier note</b></div><p>${esc(legacy)}</p></div>`;
+    html+=list.map(c=>`<div class="cmt"><div class="who"><b>${esc(who(c))}</b><span>${fmtTime(c.createdAt)}</span>${c.mine?`<button type="button" class="x" data-del="${c.cid}">delete</button>`:""}</div><p>${esc(c.text||"")}</p></div>`).join("");
+    th.innerHTML=html;
+  });
+  const n=Object.keys(state.comments).length; const sc=$("#s-comments"); if(sc) sc.textContent=n;
+}
+async function resolveNames(){}
+async function addComment(asset,text){
+  if(!text.trim()) return false; const author=myName(); if(!author){markSaved(asset,"Type your name first (top right)"); $("#myname").focus(); return false}
+  try{const r=await fetch("/api/comment",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({asset,text:text.trim(),author,token:myToken()})}); const j=await r.json(); if(!r.ok) throw new Error(j.error||r.status);
+    state.comments[j.id]={...j.comment,mine:true}; renderThreads(); return true}
+  catch(e){markSaved(asset,"Could not save ("+e.message+")"); return false}
+}
+async function deleteComment(cid){
+  try{const r=await fetch("/api/comment/"+cid,{method:"DELETE",headers:{"content-type":"application/json"},body:JSON.stringify({token:myToken()})}); if(!r.ok) throw new Error((await r.json()).error||r.status); delete state.comments[cid]; renderThreads()}catch(e){console.warn("delete",e)}
+}
+renderItems(); route(); applyReviews(); renderThreads();
+
+const timers={};
+function debounce(key,fn,ms=700){clearTimeout(timers[key]);timers[key]=setTimeout(fn,ms)}
+function markSaved(id,text){document.querySelectorAll("#saved-"+CSS.escape(id)).forEach(el=>{el.textContent=text; if(text==="Saved") setTimeout(()=>{if(el.textContent==="Saved")el.textContent=""},2500)})}
+document.addEventListener("submit",async e=>{
+  const f=e.target.closest("form.cform"); if(!f) return; e.preventDefault();
+  const ta=$("textarea",f); const btn=$("button",f); const text=ta.value; if(!text.trim()) return;
+  btn.disabled=true; const ok=await addComment(f.dataset.asset,text); btn.disabled=false; if(ok){ta.value=""; markSaved(f.dataset.asset,"Saved")}
+});
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){const f=e.target.closest("form.cform"); if(f){e.preventDefault(); f.requestSubmit()}} });
+async function saveReview(id,patch){
+  const cur={...(state.reviews[id]||{}),...patch,by:myName()||"",updatedAt:new Date().toISOString()};
+  state.reviews[id]=cur; applyReviews();
+  try{const r=await fetch("/api/review",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({asset:id,status:cur.status||"pending",by:cur.by})}); if(!r.ok) throw new Error((await r.json()).error||r.status); markSaved(id,"Saved")}catch(e){markSaved(id,"Could not save ("+e.message+")")}
+}
+document.addEventListener("click",e=>{
+  const chip=e.target.closest(".chip"); if(chip){const card=chip.closest(".card"); const cur=(state.reviews[card.dataset.id]||{}).status; saveReview(card.dataset.id,{status:cur===chip.dataset.v?"pending":chip.dataset.v}); return}
+  const op=e.target.closest("figure[data-open]"); if(op){location.hash=op.dataset.open; return}
+  const fig=e.target.closest("figure[data-src]"); if(fig&&!fig.classList.contains("missing")){$("#lb-img").src=fig.dataset.src;$("#lb-img").alt=fig.dataset.cap;$("#lb-cap").textContent=fig.dataset.cap;$("#lb").showModal();return}
+  const dl=e.target.closest("button[data-del]"); if(dl){deleteComment(dl.dataset.del); return}
+});
+$("#lb-close").addEventListener("click",()=>$("#lb").close());
+$("#lb").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+function myToken(){ try{ let t=localStorage.getItem("board_token"); if(!t){ t=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2); localStorage.setItem("board_token",t) } return t }catch(_){ return "" } }
+function myName(){ return ($("#myname").value||"").trim().slice(0,60) }
+try{ $("#myname").value=localStorage.getItem("board_name")||"" }catch(_){}
+$("#myname").addEventListener("input",()=>{ try{localStorage.setItem("board_name",myName())}catch(_){} });
+const TOKEN=myToken();
+async function sync(){
+  try{const r=await fetch("/api/state",{cache:"no-store"}); if(!r.ok) throw new Error(r.status); const s=await r.json();
+    const mineIds=new Set(Object.entries(state.comments).filter(([k,v])=>v.mine).map(([k])=>k));
+    state.reviews=s.reviews||{}; state.comments={}; Object.entries(s.comments||{}).forEach(([k,v])=>{state.comments[k]={...v,mine:mineIds.has(k)||v.mine}});
+    $("#dbdot").classList.add("live"); $("#dbmsg").textContent="Connected. Anyone with the link can set a status and comment; everything is shared and refreshes every few seconds.";
+    applyReviews(); if(!document.activeElement||!document.activeElement.closest("form.cform")) renderThreads();
+  }catch(e){ $("#dbdot").classList.remove("live"); $("#dbmsg").textContent="Not connected ("+e.message+"). Retrying…" }
+}
+sync(); setInterval(sync,4000);
+</script>
+
+</body></html>
