@@ -180,6 +180,7 @@ dialog.lb button{background:rgba(255,255,255,.15);color:#fff;border:0;border-rad
 <dialog class="lb" id="lb"><img id="lb-img" alt=""><div class="cap"><span id="lb-cap"></span><button type="button" id="lb-close">Close</button></div></dialog>
 
 <script>
+const IMGV="20261022";
 const T=(id,file,label,ratio)=>({id,file,label,ratio:ratio||"3:4"});
 const PEOPLE=[
  {id:"emma",staff:true,file:"emma/emma-01",name:"Emma",tag:"Store manager · 1Box staff (existing character)",quote:"Hoi! Ik ben Emma. Kom gerust langs, dan laat ik je de box zien.",set:"B06",
@@ -187,15 +188,15 @@ const PEOPLE=[
   msg:"Warm, practical, never salesy. She is the face of every 1Box set.",
   takes:[T("emma-01","emma/emma-01","Reception, Sep 11"),T("emma-02","emma/emma-02","Corridor, Sep 11"),T("emma-03","emma/emma-03","Inside a unit, Sep 11"),T("emma-04","emma/emma-04","Large unit, Sep 11"),T("emma-05","emma/emma-05","Video still, Sep 27"),T("emma-06","emma/emma-06","At the unit (edit), Sep 27","3:2"),T("emma-07","emma/emma-07","At the unit, boxes (edit), Sep 27","3:2"),T("emma-08","emma/emma-08","Polo match (edit), Sep 28")],
   home:null},
- {id:"c01",file:"c01-portrait",ref:T("c01-ref","ref-01-sanne-shaia","Studio reference","3:4"),name:"Sanne (35)",tag:"Children's clothing webshop · Surinamese-Hindustani roots",quote:"Proud of the webshop, done with living in a warehouse.",set:"B01",needs:["Part-time office manager, runs a kids' clothing webshop started when she became a mother","Two children (4 and 6) at school; ships parcels herself twice a week","Buys in bulk, so the house fills up with stock","With 1Box she keeps only one month of stock at home"],msg:"Warm, organised, down-to-earth, a little rushed."},
+ {id:"c01",file:"c01-portrait",ref:T("c01-ref","ref-01-sanne-shaia","Studio reference","3:4"),name:"Shaia (35)",tag:"Children's clothing webshop · Surinamese-Hindustani roots",quote:"Proud of the webshop, done with living in a warehouse.",set:"B01",needs:["Part-time office manager, runs a kids' clothing webshop started when she became a mother","Two children (4 and 6) at school; ships parcels herself twice a week","Buys in bulk, so the house fills up with stock","With 1Box she keeps only one month of stock at home"],msg:"Warm, organised, down-to-earth, a little rushed."},
  {id:"c02",file:"c02-portrait",ref:T("c02-ref","ref-02-eduardo","Studio reference","3:2"),name:"Eduardo (42)",tag:"Independent handyman · Southern European roots",quote:"Everything dry, safe and within reach. I load only what the job needs.",set:"B02",needs:["Self-employed: custom cabinets, small renovations, repairs","Planned projects, no night call-outs; no employees, one van full of tools","Every job needs different materials","At 1Box he drives up, loads what he needs, leaves the rest safe"],msg:"Reliable, calm, skilled, efficient. 'I've got this under control.'"},
  {id:"c03",file:"c03-portrait",ref:T("c03-ref","ref-03-family-enschede","Studio reference","3:2"),name:"Emre, Lotte, Daan & Noor",tag:"Moving · family from Enschede · Turkish roots",quote:"Mum plans, dad lifts, the kids 'help'.",set:"B05",needs:["Emre (38) accountant, Lotte (36) part-time secretary, Daan (8) and Noor (6) play football and hockey","Moving house; the old house needs to be photographed","Lego, toys, sports gear, a football goal and a trampoline are in the way","All of it goes into a box temporarily"],msg:"Cheerful, a bit chaotic, a typical Dutch family."},
  {id:"c04",file:"c04-portrait",ref:T("c04-ref","ref-04-jesse-fleur-mila","Studio reference","3:2"),name:"Jesse, Fleur & Mila",tag:"Renovating · young couple with a baby",quote:"One room at a time. The crib and the first baby clothes stay with us, just not here.",set:"B03",needs:["Both 30, bought a house that still needs renovating, little money","Already live there, renovate room by room","Belongings of the room being renovated go into storage","Keep Mila's (1) crib and first clothes; no room for them yet"],msg:"Practical, optimistic, a little tired but strong together. Paint on their clothes."},
  {id:"c05",file:"c05-portrait",ref:T("c05-ref","ref-05-henk-marijke","Studio reference","3:2"),name:"Henk & Marijke (65 & 63)",tag:"No storage room · from a large house to an apartment",quote:"We don't want to part with it, but we don't want to live surrounded by it either.",set:"B03",needs:["Beautiful apartment, but no attic or storage space","The crib their children slept in, keepsakes, photo albums","Seasonal items such as Christmas decorations","Enjoying this new stage of life"],msg:"Warm, stylish, sentimental yet practical."},
  {id:"c06",file:"c06-portrait",ref:T("c06-ref","ref-06-lars","Studio reference","3:4"),name:"Lars (22)",tag:"Student · semester abroad",quote:"Sublet the room, keep the stuff. Five months and everything goes straight back.",set:"B04",needs:["From Alkmaar, studies Business Administration in Groningen, student house","Member of a student association, enjoys student life","Semester abroad; sublets his room but won't leave his things there","Rents a unit for 5 months"],msg:"Sociable, relaxed, enjoys life, takes care of his things."},
- {id:"c07",file:"c07-portrait",ref:T("c07-ref","ref-07-jasper","Studio reference","3:4"),name:"Jasper (26)",tag:"Sabbatical · Indo roots",quote:"Six months around the world. My things stay safe, my rent stops.",set:"B07",needs:["Works at a media agency in Amsterdam, 6 months of leave to travel","Sublets his home during the trip","Parents live too far away and have no space","Rents a unit for the duration of the sabbatical"],msg:"Creative, curious, spontaneous but well prepared. Can't wait to leave."},
+ {id:"c07",file:"c07-portrait",ref:T("c07-ref","ref-07-jasper","Studio reference","3:4"),name:"Joshua (26)",tag:"Sabbatical · Indo roots",quote:"Six months around the world. My things stay safe, my rent stops.",set:"B07",needs:["Works at a media agency in Amsterdam, 6 months of leave to travel","Sublets his home during the trip","Parents live too far away and have no space","Rents a unit for the duration of the sabbatical"],msg:"Creative, curious, spontaneous but well prepared. Can't wait to leave."},
  {id:"c08",file:"c08-portrait",ref:T("c08-ref","ref-08-leonie-siblings","Studio reference","3:2"),name:"Leonie (55) and her siblings",tag:"Clearing out the parental home",quote:"Take your time.",set:"B03",needs:["Her mother died a few years ago, now her father too; the family home must be cleared and sold","Still grieving, no headspace to decide; everything has emotional value","Her brother and sister still need to work out what they want","Everything stored safely until there is headspace for it"],msg:"Gentle, calm, caring. Respectful and understated: no humour, no exaggerated emotion, no hospital or funeral imagery."},
- {id:"c09",file:"c09-portrait",ref:T("c09-ref","ref-09-family-lelystad","Studio reference","3:2"),name:"Pieter, Chantal, Jaylen & Imani",tag:"Seasonal items · family from Lelystad · Surinamese-Creole roots",quote:"Room to live at home, and the skis within reach when it snows.",set:"B08",needs:["Lovely terraced house in Lelystad; storage already fairly full","The attic became a home office: no room for skis, Christmas tree, camping gear","Rents a unit so they can always get to their things","Pieter (42), Chantal (40), Jaylen (10), Imani (7)"],msg:"Active, warm, well-organised. Loves winter sports, Christmas and summer camping."},
+ {id:"c09",file:"c09-portrait",ref:T("c09-ref","ref-09-family-lelystad","Studio reference","3:2"),name:"Pieter, Chantal, Jaylen & Imani",tag:"Seasonal items · family from Lelystad · Surinamese-Creole roots",quote:"Room to live at home, and the football gear within reach every weekend.",set:"B08",needs:["Lovely terraced house in Lelystad; storage already fairly full","The attic became a home office: no room for the football gear, Christmas tree, camping gear","Rents a unit so they can always get to their things","Pieter (42), Chantal (40), Jaylen (10), Imani (7)"],msg:"Active, warm, well-organised. Loves winter sports, Christmas and summer camping."},
  {id:"c10",file:"c10-portrait",ref:T("c10-ref","ref-10-eline","Studio reference","3:2"),name:"Eline (46)",tag:"Seasonal bike · road cyclist",quote:"Grab the bike the moment the sun comes out.",set:"B07",needs:["Keen road cyclist, lives on the third floor in Amsterdam","Rides every weekend April to September, cycling holidays","No room in the shared hallway, carrying it upstairs is not an option, the street is not safe","Rents a box for the bike and all the accessories"],msg:"Energetic, driven, adventurous. Lives for the weekend ride."}
 ];
 PEOPLE.forEach(p=>{ if(p.staff) return;
@@ -204,23 +205,23 @@ PEOPLE.forEach(p=>{ if(p.staff) return;
   p.homes=[p.home,T(p.id+"-home-2",p.id+"-home-2","Home \u00b7 reverse angle","3:2"),T(p.id+"-home-3",p.id+"-home-3","Home \u00b7 wide, from the door","3:2"),T(p.id+"-home-4",p.id+"-home-4","Home \u00b7 detail","3:2")];
 });
 const SETS=[
- {id:"B01",file:"B01v2-unit-3m2-webshop-stock",name:"Unit 3 m² · webshop stock",for:"Sanne",ref:"Barendrecht 0091 (3 m²) · v2, no shelves"},
+ {id:"B01",file:"B01v2-unit-3m2-webshop-stock",name:"Unit 3 m² · webshop stock",for:"Shaia",ref:"Barendrecht 0091 (3 m²) · v3, no shelves, no desk"},
  {id:"B02",file:"B02v2-unit-7m2-handyman-tools",name:"Unit 7 m² · handyman tools",for:"Eduardo",ref:"Barendrecht 0047 (7 m²) · v2, nothing on walls"},
  {id:"B03",file:"B03-unit-10m2-one-room-longterm",name:"Unit 10 m² · one room, long term",for:"Jesse & Fleur, Henk & Marijke, Leonie",ref:"Barendrecht 0034 (10 m²)"},
- {id:"B04",file:"B04-unit-2m2-abroad-suitcases",name:"Unit 2 m² · suitcases, a year abroad",for:"Lars",ref:"Barendrecht 0085 (2 m²)"},
- {id:"B05",file:"B05-unit-10m2-full-household-renovation",name:"Unit 10 m² · whole household",for:"family Enschede",ref:"Barendrecht 0035 (10 m²)"},
+ {id:"B04",file:"B04-unit-2m2-abroad-suitcases",name:"Unit 2 m² · what stays behind while abroad",for:"Lars",ref:"Barendrecht 0085 (2 m²)"},
+ {id:"B05",file:"B05-unit-10m2-full-household-renovation",name:"Unit 10 m² · toys, sports gear, trampoline",for:"family Enschede",ref:"Barendrecht 0035 (10 m²)"},
  {id:"B06",file:"B06-reception-welkom",name:"Reception · WELKOM desk",for:"Emma, everyone",ref:"Amsterdam office photo + box set"},
- {id:"B07",file:"B07-corridor-open-unit-trolley",name:"Corridor · open unit, trolley",for:"Jasper, Eline, everyone",ref:"Barendrecht 0131 + unit 1504"},
- {id:"B08",file:"B08-unit-3m2-seasonal-ski-christmas",name:"Unit 3 m² · ski gear & Christmas",for:"family Lelystad",ref:"Barendrecht 0092 (3 m²)"}
+ {id:"B07",file:"B07-corridor-open-unit-trolley",name:"Corridor · open unit, trolley",for:"Joshua, Eline, everyone",ref:"Barendrecht 0131 + unit 1504"},
+ {id:"B08",file:"B08-unit-3m2-seasonal-ski-christmas",name:"Unit 3 m² · football gear, Christmas, camping",for:"family Lelystad",ref:"Barendrecht 0092 (3 m²)"}
 ];
 const DEFAULT_ITEMS=[
  {id:"i01",name:"1Box moving box (white & green), single",for:"all"},{id:"i02",name:"Stack of three 1Box boxes",for:"all"},
  {id:"i03",name:"Flat trolley with two 1Box boxes",for:"corridor, Alex, Dekker"},{id:"i04",name:"Padlock and access code card",for:"Ronnie, security message"},
- {id:"i05",name:"Toolbox, compressor, circular saw",for:"Eduardo"},{id:"i06",name:"Pair of skis + ski boots",for:"family Lelystad"},
+ {id:"i05",name:"Toolbox, compressor, circular saw",for:"Eduardo"},{id:"i06",name:"Footballs, folding goal + football boots",for:"family Lelystad"},
  {id:"i07",name:"Boxed artificial Christmas tree + bauble bin",for:"family Lelystad"},{id:"i08",name:"White wooden crib, disassembled",for:"Lisa & Tom, Marjolein & Peter"},
  {id:"i09",name:"Stack of photo albums and scrapbooks",for:"Marjolein & Peter, Marieke, Rob"},{id:"i10",name:"Two large suitcases + travel backpack",for:"Julia, Alex"},
  {id:"i11",name:"House keys with tag + rolled floor plans",for:"Dekker family"},{id:"i12",name:"Two sofas side by side",for:"Tim & Nora"},
- {id:"i13",name:"Shipping container (20 ft) at a loading bay",for:"Alex"},{id:"i14",name:"Linen cushions and ceramic vases in a shipping box",for:"Sanne"}
+ {id:"i13",name:"Shipping container (20 ft) at a loading bay",for:"Alex"},{id:"i14",name:"Linen cushions and ceramic vases in a shipping box",for:"Shaia"}
 ];
 const CREDITS=1600+20*155+40*160;
 const STATUSES=[["approved","Approved"],["adjust","Adjust"],["redo","Redo"]];
@@ -236,13 +237,13 @@ function reviewBlock(id){return `<div class="chips" role="group" aria-label="Sta
 function assetCard(a,title,sub){
   const land=a.ratio==="3:2";
   return `<article class="card${land?" land":""}" data-id="${a.id}" data-status="pending"><div class="stripe"></div>
-   <figure data-src="img/${a.file}.jpg" data-cap="${esc(title)}"><img src="img/${a.file}.jpg" alt="${esc(title)}" loading="lazy" onerror="this.closest('figure').classList.add('missing');this.alt='not generated yet';this.removeAttribute('src')"></figure>
+   <figure data-src="img/${a.file}.jpg?v=${IMGV}" data-cap="${esc(title)}"><img src="img/${a.file}.jpg?v=${IMGV}" alt="${esc(title)}" loading="lazy" onerror="this.closest('figure').classList.add('missing');this.alt='not generated yet';this.removeAttribute('src')"></figure>
    <div class="body"><div><h3>${esc(title)}</h3>${sub?`<div class="tag">${esc(sub)}</div>`:""}</div>${reviewBlock(a.id)}</div></article>`;
 }
 function personaCard(p){
   const n=(p.takes?p.takes.length:0)+(p.homes?p.homes.length:0);
   return `<article class="card" data-id="${p.id}" data-status="pending"><div class="stripe"></div>
-   <figure data-open="${p.id}" style="cursor:pointer"><img src="img/${p.file}.jpg" alt="${esc(p.name)}" loading="lazy"><span class="n">${n} images</span></figure>
+   <figure data-open="${p.id}" style="cursor:pointer"><img src="img/${p.file}.jpg?v=${IMGV}" alt="${esc(p.name)}" loading="lazy"><span class="n">${n} images</span></figure>
    <div class="body"><div><h3><a href="#${p.id}">${esc(p.name)}</a></h3><div class="tag">${esc(p.tag)}</div></div>
     <q>${esc(p.quote)}</q>
     <div class="meta"><span>Set: ${p.set}</span></div>
@@ -261,7 +262,7 @@ function renderDetail(id){
    <div class="crumb"><a href="#personas">← Board</a><span style="color:var(--muted)">/</span><span>${esc(p.name)}</span>
      <span class="nav"><a class="btn ghost" href="#${prev.id}">← ${esc(prev.name.split(" (")[0])}</a><a class="btn ghost" href="#${next.id}">${esc(next.name.split(" (")[0])} →</a></span></div>
    <div class="hero">
-    <figure data-src="img/${p.file}.jpg" data-cap="${esc(p.name)}"><img src="img/${p.file}.jpg" alt="${esc(p.name)}"></figure>
+    <figure data-src="img/${p.file}.jpg?v=${IMGV}" data-cap="${esc(p.name)}"><img src="img/${p.file}.jpg?v=${IMGV}" alt="${esc(p.name)}"></figure>
     <div><div class="eyebrow">${p.staff?"Staff":"Customer persona"}</div><h2>${esc(p.name)}</h2><div class="tag">${esc(p.tag)}</div>
      <q>${esc(p.quote)}</q>
      <div class="cols"><div><h4>${p.staff?"Facts":"Story"}</h4><ul>${p.needs.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div><div><h4>Personality & tone</h4><div class="msg">${esc(p.msg)}</div></div></div>
